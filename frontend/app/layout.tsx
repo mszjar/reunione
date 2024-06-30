@@ -1,5 +1,5 @@
 'use client'
-import type { Metadata } from "next";
+// import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 
@@ -20,14 +20,14 @@ import {
 
 const inter = Inter({ subsets: ["latin"] });
 
-export const metadata: Metadata = {
-  title: "Reunione",
-  description: "Defi clubs",
-};
+// export const metadata: Metadata = {
+//   title: "Reunione",
+//   description: "Defi clubs",
+// };
 
 const config = getDefaultConfig({
   appName: 'Reunione',
-  projectId: process.env.NEXT_PUBLIC_WALLETCONNECT_ID,
+  projectId: process.env.NEXT_PUBLIC_WALLETCONNECT_ID || '',
   chains: [hardhat],
   ssr: true, // If your dApp uses server side rendering (SSR)
 });
