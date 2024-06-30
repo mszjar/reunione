@@ -1,0 +1,13 @@
+{
+  "devDependencies": {
+    "@nomicfoundation/hardhat-toolbox": "^5.0.0",
+    "hardhat": "^2.22.5"
+  },
+  "dependencies": {
+    "@ethersproject/providers": "^5.7.2",
+    "@openzeppelin/contracts": "^5.0.2",
+    "eth-gas-reporter": "^0.2.27",
+    "ethers": "^6.13.1",
+    "ws": "^8.17.1"
+  }
+}
