@@ -1,10 +1,13 @@
-import Header from "@/components/Header";
+import Clubs from "@/components/Clubs";
+import { Layout } from "@/components/Layout";
 
 
 export default function Home() {
   return (
     <div>
-      <Header/>
+      <Layout>
+        <Clubs/>
+      </Layout>
     </div>
   );
 }
