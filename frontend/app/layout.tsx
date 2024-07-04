@@ -8,6 +8,7 @@ import '@rainbow-me/rainbowkit/styles.css';
 import {
   getDefaultConfig,
   RainbowKitProvider,
+  darkTheme
 } from '@rainbow-me/rainbowkit';
 import { WagmiProvider } from 'wagmi';
 import {
@@ -17,6 +18,7 @@ import {
   QueryClientProvider,
   QueryClient,
 } from "@tanstack/react-query";
+import { Layout } from "@/components/Layout";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -44,8 +46,10 @@ export default function RootLayout({
       <body className={inter.className}>
         <WagmiProvider config={config}>
           <QueryClientProvider client={queryClient}>
-            <RainbowKitProvider>
-              {children}
+            <RainbowKitProvider theme={darkTheme({accentColor: '#dfbe2c', accentColorForeground: 'black'})}>
+              <Layout>
+                {children}
+              </Layout>
             </RainbowKitProvider>
           </QueryClientProvider>
         </WagmiProvider>

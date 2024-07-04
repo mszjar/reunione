@@ -1,13 +1,11 @@
-import Clubs from "@/components/Clubs";
+import DisplayClubs from "@/components/DisplayClubs";
 import { Layout } from "@/components/Layout";
 
 
 export default function Home() {
   return (
     <div>
-      <Layout>
-        <Clubs/>
-      </Layout>
+        <DisplayClubs/>
     </div>
   );
 }
