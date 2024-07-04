@@ -1,9 +1,17 @@
-import React from 'react'
+'use client'
 
-const CreateClub = () => {
+import FormClub from "@/components/FormClub";
+import NotConnected from "@/components/NotConnected";
+import { useAccount } from "wagmi";
+
+const page = () => {
+  const { isConnected } = useAccount();
+
   return (
-    <div>CreateClub</div>
+    <div>
+      { isConnected ? (<FormClub />) : (<NotConnected />)}
+    </div>
   )
 }
 
-export default CreateClub
+export default page

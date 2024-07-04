@@ -46,7 +46,7 @@ export default function RootLayout({
       <body className={inter.className}>
         <WagmiProvider config={config}>
           <QueryClientProvider client={queryClient}>
-            <RainbowKitProvider theme={darkTheme({accentColor: '#dfbe2c', accentColorForeground: 'black'})}>
+            <RainbowKitProvider modalSize="compact" theme={darkTheme({accentColor: '#dfbe2c', accentColorForeground: 'black'})}>
               <Layout>
                 {children}
               </Layout>
