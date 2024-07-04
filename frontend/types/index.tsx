@@ -30,3 +30,33 @@ export interface RefundProps {
   goal: string;
   totalCollected: string;
 }
+
+export interface InformationsProps {
+  hash: any;
+  isConfirming: boolean;
+  isConfirmed: boolean;
+  error: any;
+}
+
+// types.ts
+export interface Club {
+  id: string;
+  title: string;
+  description: string;
+  end: string;
+  amountCollected: string;
+  image: string;
+  subscriptionPrice: string;
+  owner: string;
+}
+
+export interface ClubProps {
+  id: string;
+  title: string;
+  description: string;
+  end: string;
+  amountCollected: string;
+  image: string;
+  subscriptionPrice: string;
+  owner: string;
+}

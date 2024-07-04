@@ -1,6 +1,6 @@
 'use client'
 
-import FormClub from "@/components/FormClub";
+import CreateClub from "@/components/CreateClub";
 import NotConnected from "@/components/NotConnected";
 import { useAccount } from "wagmi";
 
@@ -9,7 +9,7 @@ const page = () => {
 
   return (
     <div>
-      { isConnected ? (<FormClub />) : (<NotConnected />)}
+      { isConnected ? (<CreateClub />) : (<NotConnected />)}
     </div>
   )
 }
