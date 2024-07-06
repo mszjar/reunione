@@ -2,15 +2,10 @@
 import { useState, useEffect } from "react";
 import { useAccount, useReadContract } from "wagmi";
 import { contractAddress, abi } from "@/constants";
-import { Input } from './ui/input';
-import { Button } from './ui/button';
-import { Label } from "./ui/label";
-import { Card, CardContent } from "./ui/card";
-import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from "./ui/table";
-import Informations from "./Informations";
 import { parseEther, formatEther, Abi, Address } from "viem";
-import { ClubProps, Club } from "@/types";
+import { Club } from "@/types";
 import Image from "next/image";
+import Link from "next/link";
 
 const GetClubs = () => {
   const [enable, setEnable] = useState(false);
@@ -19,9 +14,7 @@ const GetClubs = () => {
     address: contractAddress,
     abi: abi,
     functionName: "getClubs",
-    query: {
-      enabled: enable,
-    }
+    enabled: enable,
   });
 
   useEffect(() => {
@@ -42,6 +35,7 @@ const GetClubs = () => {
         {clubs && (
           <div className="mt-5 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
             {(clubs as Club[]).map((club: Club) => (
+              <Link key={club.id} href={`/clubs/${club.title}`}>
               <div key={club.id} className="group cursor-pointer overflow-hidden rounded-2xl border duration-300 ease-in-out mb-5">
                 <Image
                   src={club.image}
@@ -60,6 +54,7 @@ const GetClubs = () => {
                   <p className="text-gray-600 text-xs mb-2">Owner: {club.owner}</p>
                 </div>
               </div>
+              </Link>
             ))}
           </div>
         )}
