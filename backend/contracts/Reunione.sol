@@ -2,7 +2,7 @@
 pragma solidity 0.8.24;
 
 contract Reunione {
-    uint256 public constant MAX_DURATION = 730 days;
+    uint256 public constant MAX_DURATION = 730;
 
     error DurationExceeded();
     error InvalidSubscriptionPrice();
@@ -50,7 +50,7 @@ contract Reunione {
         club.owner = msg.sender;
         club.title = _title;
         club.description = _description;
-        club.end = block.timestamp + _duration;
+        club.end = block.timestamp + (_duration * 86400);
         club.amountCollected = 0;
         club.image = _image;
         club.subscriptionPrice = _subscriptionPrice;
