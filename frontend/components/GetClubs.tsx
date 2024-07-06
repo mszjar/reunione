@@ -35,8 +35,8 @@ const GetClubs = () => {
         {clubs && (
           <div className="mt-5 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
             {(clubs as Club[]).map((club: Club) => (
-              <Link key={club.id} href={`/clubs/${club.title}`}>
-              <div key={club.id} className="group cursor-pointer overflow-hidden rounded-2xl border duration-300 ease-in-out mb-5">
+              <Link href={`/clubs/${club.title}`}>
+              <div className="group cursor-pointer overflow-hidden rounded-2xl border duration-300 ease-in-out mb-5">
                 <Image
                   src={club.image}
                   alt={club.title}

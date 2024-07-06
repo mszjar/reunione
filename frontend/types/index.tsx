@@ -12,7 +12,6 @@ export interface InformationsProps {
 }
 
 export interface Club {
-  id: string;
   title: string;
   description: string;
   end: string;
