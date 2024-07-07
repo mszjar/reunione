@@ -27,6 +27,10 @@ const GetClubs = () => {
     refetch();
   }, []);
 
+  const generateSlug = (title: string) => {
+    return title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+  };
+
   const dateManagement = (data: string) => {
     let date = parseInt(data)
     const currentTimestamp = Math.floor(Date.now() / 1000);
@@ -43,7 +47,7 @@ const GetClubs = () => {
       <div className="get_inner">
         <div className="mt-5 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
           {clubs.map((club: Club, index: number) => (
-            <Link href={`/clubs/${index}`} key={index}>
+            <Link href={`/clubs/${index}-${generateSlug(club.title)}`} key={index}>
               <div className="group cursor-pointer overflow-hidden rounded-2xl border duration-300 ease-in-out mb-5">
                 <Image
                   src={club.image}
