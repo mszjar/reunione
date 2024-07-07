@@ -95,6 +95,11 @@ contract Reunione {
         return allClubs;
     }
 
+    function getClub(uint256 _id) public view returns (Club memory) {
+        require(_id < numberOfClubs, "Club does not exist");
+        return clubs[_id];
+    }
+
     function withdraw(uint256 _id) public {
         Club storage club = clubs[_id];
         if (block.timestamp < club.end) {
