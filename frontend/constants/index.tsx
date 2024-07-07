@@ -1,5 +1,5 @@
 export const contractAddress = '0x5fbdb2315678afecb367f032d93f642f64180aa3'
-export const abi = [
+export const abi =  [
   {
     "inputs": [],
     "name": "ClubEnded",
@@ -228,6 +228,67 @@ export const abi = [
       }
     ],
     "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_id",
+        "type": "uint256"
+      }
+    ],
+    "name": "getClub",
+    "outputs": [
+      {
+        "components": [
+          {
+            "internalType": "address",
+            "name": "owner",
+            "type": "address"
+          },
+          {
+            "internalType": "string",
+            "name": "title",
+            "type": "string"
+          },
+          {
+            "internalType": "string",
+            "name": "description",
+            "type": "string"
+          },
+          {
+            "internalType": "uint256",
+            "name": "end",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "amountCollected",
+            "type": "uint256"
+          },
+          {
+            "internalType": "string",
+            "name": "image",
+            "type": "string"
+          },
+          {
+            "internalType": "address payable[]",
+            "name": "members",
+            "type": "address[]"
+          },
+          {
+            "internalType": "uint256",
+            "name": "subscriptionPrice",
+            "type": "uint256"
+          }
+        ],
+        "internalType": "struct Reunione.Club",
+        "name": "",
+        "type": "tuple"
+      }
+    ],
+    "stateMutability": "view",
     "type": "function"
   },
   {

@@ -1,27 +1,33 @@
 'use client'
+
 import { useState, useEffect } from "react";
-import { useAccount, useReadContract } from "wagmi";
+import { useReadContract } from "wagmi";
 import { contractAddress, abi } from "@/constants";
-import { parseEther, formatEther, Abi, Address } from "viem";
+import { formatEther } from "viem";
 import { Club } from "@/types";
 import Image from "next/image";
 import Link from "next/link";
 
 const GetClubs = () => {
-  const [enable, setEnable] = useState(false);
+  const [clubs, setClubs] = useState<Club[]>([]);
 
-  const { data: clubs, refetch } = useReadContract<Club[], string, Abi>({
+  const { data: clubsData, isError, isLoading, refetch } = useReadContract({
     address: contractAddress,
     abi: abi,
     functionName: "getClubs",
-    enabled: enable,
   });
 
   useEffect(() => {
-    refetch();
-  }, [enable]);
+    if (clubsData) {
+      setClubs(clubsData as Club[]);
+    }
+  }, [clubsData]);
 
-  const dateManagment = (data: string) => {
+  useEffect(() => {
+    refetch();
+  }, []);
+
+  const dateManagement = (data: string) => {
     let date = parseInt(data)
     const currentTimestamp = Math.floor(Date.now() / 1000);
     const durationInSeconds = date - currentTimestamp;
@@ -29,13 +35,15 @@ const GetClubs = () => {
     return durationInDays;
   }
 
+  if (isLoading) return <div>Loading clubs...</div>;
+  if (isError) return <div>Error fetching clubs</div>;
+
   return (
     <div className="get">
       <div className="get_inner">
-        {clubs && (
-          <div className="mt-5 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-            {(clubs as Club[]).map((club: Club) => (
-              <Link href={`/clubs/${club.title}`}>
+        <div className="mt-5 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+          {clubs.map((club: Club, index: number) => (
+            <Link href={`/clubs/${index}`} key={index}>
               <div className="group cursor-pointer overflow-hidden rounded-2xl border duration-300 ease-in-out mb-5">
                 <Image
                   src={club.image}
@@ -49,15 +57,14 @@ const GetClubs = () => {
                     <p className="text-2xl font-bold">{club.title}</p>
                   </div>
                   <p className="text-gray-600 text-sm mb-2">{club.description}</p>
-                  <p className="text-gray-600 text-sm mb-2">Remaining days: {dateManagment(club.end)}</p>
+                  <p className="text-gray-600 text-sm mb-2">Remaining days: {dateManagement(club.end)}</p>
                   <p className="text-gray-600 text-sm mb-2">Membership: {formatEther(BigInt(club.subscriptionPrice))} ETH</p>
                   <p className="text-gray-600 text-xs mb-2">Owner: {club.owner}</p>
                 </div>
               </div>
-              </Link>
-            ))}
-          </div>
-        )}
+            </Link>
+          ))}
+        </div>
       </div>
     </div>
   )
