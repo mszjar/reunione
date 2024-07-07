@@ -10,6 +10,7 @@ contract Reunione {
     error InvalidSubscriptionPayment();
     error NotAMember();
     error ClubNotEnded();
+    error AlreadyAMember();
 
     event ClubCreated(uint256 indexed id, address owner, string title, string description, uint256 end, uint256 subscriptionPrice, string image);
     event JoinedClub(uint256 indexed id, address member, uint256 subscriptionPayment);
@@ -50,7 +51,7 @@ contract Reunione {
         club.owner = msg.sender;
         club.title = _title;
         club.description = _description;
-        club.end = block.timestamp + (_duration * 86400);
+        club.end = block.timestamp + (_duration * 60); //86400
         club.amountCollected = 0;
         club.image = _image;
         club.subscriptionPrice = _subscriptionPrice;
@@ -70,6 +71,9 @@ contract Reunione {
         }
         if (msg.value != club.subscriptionPrice) {
             revert InvalidSubscriptionPayment();
+        }
+        if (isMember[_id][msg.sender]) {
+            revert AlreadyAMember();
         }
 
         club.members.push(payable(msg.sender));
@@ -102,16 +106,15 @@ contract Reunione {
 
     function withdraw(uint256 _id) public {
         Club storage club = clubs[_id];
-        if (block.timestamp < club.end) {
-            revert ClubNotEnded();
-        }
-        if (!isMember[_id][msg.sender]) {
-            revert NotAMember();
-        }
+        require(club.end >= block.timestamp, "Club has not ended yet");
+        require(isMember[_id][msg.sender], "Not a member of this club");
 
         uint256 memberShare = club.amountCollected / club.members.length;
 
-        payable(msg.sender).transfer(memberShare);
+        (bool success, ) = payable(msg.sender).call{value: memberShare}("");
+        require(success, "Transfer failed");
+
+        isMember[_id][msg.sender] = false;
 
         emit WithdrawnFunds(_id, msg.sender, memberShare);
     }

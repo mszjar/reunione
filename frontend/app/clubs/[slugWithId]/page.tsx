@@ -1,30 +1,29 @@
 'use client'
 
 import GetClub from '@/components/GetClub'
-import React from 'react'
+import JoinClub from '@/components/JoinClub'
+import WithdrawFunds from '@/components/WithdrawFunds'
+import React, { useState } from 'react'
 import { useParams } from 'next/navigation'
+import { useAccount } from 'wagmi'
 
 const Page = () => {
   const params = useParams()
+  const [clubData, setClubData] = useState(null);
+  const { address } = useAccount();
 
-  // Log the params to see what we're actually receiving
   console.log("Route params:", params);
 
-  // Check if we have a clubId or slugWithId
   const idParam = params.clubId || params.slugWithId;
 
-  // Function to safely parse the ID
   const parseId = (param: string | string[] | undefined): number | null => {
     if (typeof param === 'string') {
-      // If it's just a number, parse it
       if (/^\d+$/.test(param)) {
         return parseInt(param, 10);
       }
-      // If it's a slug, try to extract the number from the beginning
       const match = param.match(/^(\d+)/);
       return match ? parseInt(match[1], 10) : null;
     }
-    // If it's an array, try to parse the first element
     if (Array.isArray(param) && param.length > 0) {
       return parseId(param[0]);
     }
@@ -37,9 +36,30 @@ const Page = () => {
     return <div>Invalid or missing club ID</div>;
   }
 
+  const handleClubDataFetched = (data) => {
+    setClubData(data);
+  };
+
+  const isClubEnded = clubData ? Date.now() / 1000 > parseInt(clubData.end) : false;
+  const isMember = clubData ? clubData.members.includes(address) : false;
+
   return (
     <div className="container mx-auto px-4 py-8">
-      <GetClub id={clubId} />
+      <GetClub id={clubId} onDataFetched={handleClubDataFetched} />
+      {clubData && (
+        <div className="mt-4 space-y-4">
+          <JoinClub
+            clubId={clubId}
+            subscriptionPrice={clubData.subscriptionPrice}
+            members={clubData.members}
+          />
+          <WithdrawFunds
+            clubId={clubId}
+            clubEnded={isClubEnded}
+            isMember={isMember}
+          />
+        </div>
+      )}
     </div>
   )
 }
