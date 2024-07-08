@@ -53,11 +53,11 @@ const Page = () => {
             subscriptionPrice={clubData.subscriptionPrice}
             members={clubData.members}
           />
-          <WithdrawFunds
+          {/* <WithdrawFunds
             clubId={clubId}
             clubEnded={isClubEnded}
             isMember={isMember}
-          />
+          /> */}
         </div>
       )}
     </div>
