@@ -43,7 +43,7 @@ export const abi = [
   },
   {
     "inputs": [],
-    "name": "NotAMember",
+    "name": "NotAMemberOrAlreadyWithdrawn",
     "type": "error"
   },
   {
