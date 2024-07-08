@@ -53,7 +53,7 @@ const CreateClub = () => {
     <div className="create">
       <div className="create_inner">
         <h1 className="create_inner_title">
-          <span className="create_inner_title_colored">Créer un club</span>
+          <span className="text-2xl flex justify-center">Create a Club</span>
         </h1>
         <Card>
           <CardContent className="pt-5">
@@ -62,31 +62,31 @@ const CreateClub = () => {
               handleCreateClub();
             }}>
               <div className="create_inner_form_item">
-                <Label htmlFor="clubName">Nom du club</Label>
+                <Label htmlFor="clubName">Name</Label>
                 <Input
                   type="text"
                   id="clubName"
-                  placeholder="Ex: Club de lecture"
+                  placeholder="Ex: Book Club"
                   value={clubName}
                   onChange={(e) => setClubName(e.target.value)}
                 />
               </div>
               <div className="create_inner_form_item mt-3">
-                <Label htmlFor="clubDescription">Description du club</Label>
+                <Label htmlFor="clubDescription">Description</Label>
                 <Input
                   type="text"
                   id="clubDescription"
-                  placeholder="Ex: Un club pour les amateurs de lecture"
+                  placeholder="Ex: A club for book lovers"
                   value={clubDescription}
                   onChange={(e) => setClubDescription(e.target.value)}
                 />
               </div>
               <div className="create_inner_form_item mt-3">
-                <Label htmlFor="clubDuration">Durée du club (en minutes)</Label>
+                <Label htmlFor="clubDuration">Duration(minutes)</Label>
                 <Input
                   type="number"
                   id="clubDuration"
-                  placeholder="Ex: 1440 pour 1 jour"
+                  placeholder="Ex: 1440 for 1 day"
                   min="1"
                   max="1051200"
                   value={clubDuration}
@@ -94,7 +94,7 @@ const CreateClub = () => {
                 />
               </div>
               <div className="create_inner_form_item mt-3">
-                <Label htmlFor="clubPrice">Prix d'adhésion (en ETH)</Label>
+                <Label htmlFor="clubPrice">Membership (ETH)</Label>
                 <Input
                   type="text"
                   id="clubPrice"
@@ -104,7 +104,7 @@ const CreateClub = () => {
                 />
               </div>
               <div className="create_inner_form_item mt-3">
-                <Label htmlFor="clubImage">URL de l'image du club</Label>
+                <Label htmlFor="clubImage">Image URL</Label>
                 <Input
                   type="text"
                   id="clubImage"
@@ -117,15 +117,15 @@ const CreateClub = () => {
               <Button
                 variant="outline"
                 disabled={isLoading}
-                className="create_inner_submit_button hover:bg-[#75fd38] mt-3"
+                className="create_inner_submit_button hover:bg-[#fddf38] mt-3"
                 type="submit"
               >
-                {isLoading ? 'Création en cours...' : 'Créer le club'}
+                {isLoading ? 'Création en cours...' : 'Create Club'}
               </Button>
             </form>
             {isSuccess && (
               <div className="create_inner_success_message mt-3 text-green-500">
-                Le club a été créé avec succès !
+                Club created successfully!
               </div>
             )}
           </CardContent>
