@@ -8,7 +8,7 @@ contract Reunione {
     error InvalidSubscriptionPrice();
     error ClubEnded();
     error InvalidSubscriptionPayment();
-    error NotAMember();
+    error NotAMemberOrAlreadyWithdrawn();
     error ClubNotEnded(uint256 endTime, uint256 currentTime);
     error AlreadyAMember();
 
@@ -110,7 +110,7 @@ contract Reunione {
             revert ClubNotEnded(club.end, block.timestamp);
         }
         if (!isMember[_id][msg.sender]) {
-            revert NotAMember();
+            revert NotAMemberOrAlreadyWithdrawn();
         }
 
         uint256 memberShare = club.amountCollected / club.members.length;

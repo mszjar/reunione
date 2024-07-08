@@ -82,11 +82,11 @@ const CreateClub = () => {
                 />
               </div>
               <div className="create_inner_form_item mt-3">
-                <Label htmlFor="clubDuration">Duration(minutes)</Label>
+                <Label htmlFor="clubDuration">Duration(days)</Label>
                 <Input
                   type="number"
                   id="clubDuration"
-                  placeholder="Ex: 1440 for 1 day"
+                  placeholder="Ex: 30"
                   min="1"
                   max="1051200"
                   value={clubDuration}
