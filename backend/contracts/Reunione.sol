@@ -9,7 +9,7 @@ contract Reunione {
     error ClubEnded();
     error InvalidSubscriptionPayment();
     error NotAMember();
-    error ClubNotEnded();
+    error ClubNotEnded(uint256 endTime, uint256 currentTime);
     error AlreadyAMember();
 
     event ClubCreated(uint256 indexed id, address owner, string title, string description, uint256 end, uint256 subscriptionPrice, string image);
@@ -51,7 +51,7 @@ contract Reunione {
         club.owner = msg.sender;
         club.title = _title;
         club.description = _description;
-        club.end = block.timestamp + (_duration * 60); //86400
+        club.end = block.timestamp + (_duration * 86400);
         club.amountCollected = 0;
         club.image = _image;
         club.subscriptionPrice = _subscriptionPrice;
@@ -106,8 +106,12 @@ contract Reunione {
 
     function withdraw(uint256 _id) public {
         Club storage club = clubs[_id];
-        require(club.end >= block.timestamp, "Club has not ended yet");
-        require(isMember[_id][msg.sender], "Not a member of this club");
+        if (block.timestamp < club.end) {
+            revert ClubNotEnded(club.end, block.timestamp);
+        }
+        if (!isMember[_id][msg.sender]) {
+            revert NotAMember();
+        }
 
         uint256 memberShare = club.amountCollected / club.members.length;
 

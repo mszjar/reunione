@@ -23,7 +23,7 @@ interface ClubData {
 }
 
 const GetClub = ({ id, onDataFetched }: GetClubProps) => {
-  const [showAllMembers, setShowAllMembers] = useState(false);
+  const [showAllMembers, setShowAllMembers] = useState(true);
 
   const { data: club, isError, isLoading, error } = useReadContract({
     address: contractAddress,
@@ -95,17 +95,17 @@ const GetClub = ({ id, onDataFetched }: GetClubProps) => {
 
         <div className="mt-4">
           <h2 className="text-xl font-bold mb-2">Members ({club.members.length})</h2>
-          <button
-            onClick={toggleMemberDisplay}
-            className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-1 px-2 rounded text-sm mb-2"
-          >
-            {showAllMembers ? 'Show Less' : 'Show All'}
-          </button>
           <ul className="list-disc list-inside">
             {club.members.slice(0, showAllMembers ? undefined : 5).map((member, index) => (
               <li key={index} className="text-gray-600">{truncateAddress(member)}</li>
             ))}
           </ul>
+          <button
+            onClick={toggleMemberDisplay}
+            className="text-gray-500 text-xs mb-2"
+          >
+            {showAllMembers ? 'Show Less' : 'Show All'}
+          </button>
           {!showAllMembers && club.members.length > 5 && (
             <p className="text-gray-500 mt-2">...and {club.members.length - 5} more</p>
           )}
