@@ -2,7 +2,6 @@
 
 import GetClub from '@/components/GetClub'
 import JoinClub from '@/components/JoinClub'
-import WithdrawFunds from '@/components/WithdrawFunds'
 import React, { useState } from 'react'
 import { useParams } from 'next/navigation'
 import { useAccount } from 'wagmi'
@@ -53,11 +52,6 @@ const Page = () => {
             subscriptionPrice={clubData.subscriptionPrice}
             members={clubData.members}
           />
-          {/* <WithdrawFunds
-            clubId={clubId}
-            clubEnded={isClubEnded}
-            isMember={isMember}
-          /> */}
         </div>
       )}
     </div>

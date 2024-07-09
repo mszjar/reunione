@@ -169,8 +169,7 @@ const GetClub = ({ id, onDataFetched }: GetClubProps) => {
         </div>
 
         {isMember && (
-          <div className="mt-4">
-            <p className="text-gray-600 mb-2">You are a member of this club</p>
+          <div className="mt-2">
             <Button
               onClick={handleWithdraw}
               disabled={isWithdrawLoading || !clubEnded}

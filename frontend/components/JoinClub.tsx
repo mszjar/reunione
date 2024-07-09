@@ -46,7 +46,7 @@ const JoinClub: React.FC<JoinClubProps> = ({ clubId, subscriptionPrice, members 
   };
 
   if (isConfirming) return <div>Confirming transaction...</div>;
-  if (isConfirmed) return <div>Successfully joined the club!</div>;
+  if (isConfirmed) return <div className="text-green-600 font-bold">Successfully joined the club!</div>;
   if (error) return <div>Error: {error.message}</div>;
 
   if (isAlreadyMember) {
