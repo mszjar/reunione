@@ -1,31 +1,54 @@
 'use client'
 
-import React, { useState } from 'react';
-import { useWriteContract, useWaitForTransactionReceipt, useAccount } from 'wagmi';
-import { parseEther } from 'viem';
+import React, { useState, useEffect } from 'react';
+import { useWriteContract, useWaitForTransactionReceipt, useAccount, useReadContract } from 'wagmi';
+import { parseEther, formatEther } from 'viem';
 import { contractAddress, abi } from "@/constants";
 
 interface JoinClubProps {
   clubId: number;
-  subscriptionPrice: bigint;
   members: string[];
 }
 
-const JoinClub: React.FC<JoinClubProps> = ({ clubId, subscriptionPrice, members }) => {
+const JoinClub: React.FC<JoinClubProps> = ({ clubId, members }) => {
   const [isJoining, setIsJoining] = useState(false);
+  const [joinFee, setJoinFee] = useState<bigint | null>(null);
   const { address } = useAccount();
 
   const { data: hash, writeContract, error } = useWriteContract();
+
+  const { data: calculatedFee } = useReadContract({
+    address: contractAddress,
+    abi: abi,
+    functionName: 'calculateJoinFee',
+    args: [BigInt(clubId)],
+  });
+
+  useEffect(() => {
+    if (calculatedFee) {
+      setJoinFee(calculatedFee as bigint);
+    }
+  }, [calculatedFee]);
 
   const { isLoading: isConfirming, isSuccess: isConfirmed } = useWaitForTransactionReceipt({
     hash,
   })
 
-  const isAlreadyMember = members.includes(address);
+  const isAlreadyMember = address ? members.includes(address) : false;
 
   const handleJoin = async () => {
+    if (!address) {
+      console.error('No wallet connected');
+      return;
+    }
+
     if (isAlreadyMember) {
       console.error('You are already a member of this club');
+      return;
+    }
+
+    if (!joinFee) {
+      console.error('Join fee not calculated yet');
       return;
     }
 
@@ -36,7 +59,7 @@ const JoinClub: React.FC<JoinClubProps> = ({ clubId, subscriptionPrice, members 
         abi: abi,
         functionName: 'joinClub',
         args: [BigInt(clubId)],
-        value: subscriptionPrice,
+        value: joinFee,
       });
     } catch (err) {
       console.error('Error joining club:', err);
@@ -44,6 +67,10 @@ const JoinClub: React.FC<JoinClubProps> = ({ clubId, subscriptionPrice, members 
       setIsJoining(false);
     }
   };
+
+  if (!address) {
+    return <div>Please connect your wallet to join the club</div>;
+  }
 
   if (isConfirming) return <div>Confirming transaction...</div>;
   if (isConfirmed) return <div className="text-green-600 font-bold">Successfully joined the club!</div>;
@@ -54,15 +81,22 @@ const JoinClub: React.FC<JoinClubProps> = ({ clubId, subscriptionPrice, members 
   }
 
   return (
-    <button
-      onClick={handleJoin}
-      disabled={isJoining || isAlreadyMember}
-      className={`${
-        isAlreadyMember ? 'bg-gray-400' : 'bg-blue-500 hover:bg-blue-700'
-      } text-white font-bold py-2 px-4 rounded`}
-    >
-      {isJoining ? 'Joining...' : 'Join Club'}
-    </button>
+    <div>
+      {joinFee && (
+        <div className="mb-2">
+          Current join fee: {formatEther(joinFee)} ETH
+        </div>
+      )}
+      <button
+        onClick={handleJoin}
+        disabled={isJoining || isAlreadyMember || !joinFee}
+        className={`${
+          isAlreadyMember || !joinFee ? 'bg-gray-400' : 'bg-blue-500 hover:bg-blue-700'
+        } text-white font-bold py-2 px-4 rounded`}
+      >
+        {isJoining ? 'Joining...' : 'Join Club'}
+      </button>
+    </div>
   );
 };
 
