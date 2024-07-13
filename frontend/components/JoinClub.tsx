@@ -69,7 +69,7 @@ const JoinClub: React.FC<JoinClubProps> = ({ clubId, members }) => {
   };
 
   if (!address) {
-    return <div>Please connect your wallet to join the club</div>;
+    return <div className='text-gray-500 font-semibold'>Please connect your wallet to join the club</div>;
   }
 
   if (isConfirming) return <div>Confirming transaction...</div>;
