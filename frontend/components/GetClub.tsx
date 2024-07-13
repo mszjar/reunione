@@ -170,7 +170,7 @@ const GetClub = ({ id, onDataFetched }: GetClubProps) => {
         <p className="text-gray-600 mb-2">Time remaining: {getTimeRemaining(club.end)}</p>
         <p className="text-gray-600 mb-2">Current Block Time: {currentBlockTime ? new Date(currentBlockTime * 1000).toLocaleString() : 'Loading...'}</p>
         <p className="text-gray-600 mb-2">Base Membership: {formatEther(club.subscriptionPrice)} ETH</p>
-        <p className="text-gray-600 mb-2">Owner: {truncateAddress(club.owner)}</p>
+        <p className="text-gray-600 mb-2">Created by: {club.owner}</p>
         <p className="text-gray-600 mb-2">Total collected: {formatEther(club.amountCollected)} ETH</p>
 
         <div className="mt-4">
