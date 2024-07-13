@@ -26,6 +26,8 @@ interface ClubData {
 const GetClub = ({ id, onDataFetched }: GetClubProps) => {
   const [showAllMembers, setShowAllMembers] = useState(true);
   const [currentBlockTime, setCurrentBlockTime] = useState<number | null>(null);
+  const [hasWithdrawn, setHasWithdrawn] = useState(false);
+  const [memberShare, setMemberShare] = useState<string | null>(null);
 
   const publicClient = usePublicClient();
   const { address } = useAccount();
@@ -96,18 +98,24 @@ const GetClub = ({ id, onDataFetched }: GetClubProps) => {
   }
 
   const handleWithdraw = async () => {
-    if (!club || !hasClubEnded(club.end)) {
-      console.error("Cannot withdraw: Club has not ended yet");
+    if (!club || !hasClubEnded(club.end) || !address) {
+      console.error("Cannot withdraw: Club has not ended yet or no wallet connected");
       return;
     }
 
     try {
+      // Calculate memberShare before withdrawal
+      const calculatedShare = club.amountCollected / BigInt(club.members.length);
+      setMemberShare(formatEther(calculatedShare));
+
       await writeContract({
         address: contractAddress,
         abi: abi,
         functionName: 'withdraw',
         args: [id],
       });
+
+      setHasWithdrawn(true);
     } catch (err) {
       console.error("Error withdrawing funds:", err);
     }
@@ -172,12 +180,13 @@ const GetClub = ({ id, onDataFetched }: GetClubProps) => {
           <div className="mt-2">
             <Button
               onClick={handleWithdraw}
-              disabled={isWithdrawLoading || !clubEnded}
+              disabled={isWithdrawLoading || !clubEnded || hasWithdrawn}
             >
-              {isWithdrawLoading ? 'Withdrawing...' : 'Withdraw Funds'}
+              {isWithdrawLoading ? 'Withdrawing...' : hasWithdrawn ? 'Withdrawn' : 'Withdraw Funds'}
             </Button>
             {!clubEnded && <div className="text-gray-500 text-xs mt-2">Club has not ended yet. Withdrawal not available.</div>}
             {isWithdrawSuccess && <div className="text-green-500 text-xs mt-2">Funds withdrawn successfully!</div>}
+            {memberShare && <div className="text-blue-500 text-xs mt-2">Your share: {memberShare} ETH</div>}
           </div>
         )}
       </div>
