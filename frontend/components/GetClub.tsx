@@ -169,14 +169,14 @@ const GetClub: React.FC<GetClubProps> = ({ id, onDataFetched }) => {
                 className="object-contain w-full h-60 rounded-lg"
               />
             </div>
-            <div className="w-full md:w-1/2 space-y-4">
+            <div className="w-full md:w-1/2 space-y-2">
               <h1 className="text-3xl font-bold">{club.title}</h1>
-              <p className="text-gray-600">{club.description}</p>
-              <p className="text-gray-600">Status: {clubEnded ? "Ended" : "Active"}</p>
-              <p className="text-gray-600">Time remaining: {getTimeRemaining(club.end)}</p>
-              <p className="text-gray-600">Base Membership: {formatEther(club.subscriptionPrice)} ETH</p>
-              <p className="text-gray-600">Owner: {truncateAddress(club.owner)}</p>
-              <p className="text-gray-600">Total collected: {formatEther(club.amountCollected)} ETH</p>
+              <p className="text-gray-600 pb-2">{club.description}</p>
+              <p className="text-gray-600 text-sm">Status: {clubEnded ? "Ended" : "Active"}</p>
+              <p className="text-gray-600 text-sm">Time remaining: {getTimeRemaining(club.end)}</p>
+              <p className="text-gray-600 text-sm">Base Membership: {formatEther(club.subscriptionPrice)} ETH</p>
+              <p className="text-gray-600 text-sm">Created by: {truncateAddress(club.owner)}</p>
+              <p className="text-gray-600 text-sm">Total collected: {formatEther(club.amountCollected)} ETH</p>
             </div>
           </div>
         </CardContent>
