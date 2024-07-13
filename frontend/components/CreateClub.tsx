@@ -1,5 +1,5 @@
 'use client'
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAccount, useWriteContract, useWaitForTransactionReceipt } from "wagmi";
 import { contractAddress, abi } from "@/constants";
 import { Input } from './ui/input';
@@ -7,6 +7,7 @@ import { Button } from './ui/button';
 import { Label } from "./ui/label";
 import { Card, CardContent } from "./ui/card";
 import { parseEther } from "viem";
+import { useRouter } from 'next/navigation';
 
 const CreateClub = () => {
   const [clubName, setClubName] = useState("");
@@ -14,22 +15,24 @@ const CreateClub = () => {
   const [clubDuration, setClubDuration] = useState("");
   const [clubPrice, setClubPrice] = useState("");
   const [clubImage, setClubImage] = useState("");
+  const [publicPostFee, setPublicPostFee] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
 
   const { address } = useAccount();
+  const router = useRouter();
 
   const { data: hash, isPending, error, writeContract } = useWriteContract();
 
   const handleCreateClub = async () => {
     setErrorMessage("");
-    if (!clubName || !clubDescription || !clubDuration || !clubPrice || !clubImage) {
+    if (!clubName || !clubDescription || !clubDuration || !clubPrice || !clubImage || !publicPostFee) {
       setErrorMessage("Please fill in all fields");
       return;
     }
 
     const duration = parseInt(clubDuration);
-    if (isNaN(duration) || duration <= 0 || duration > 1051200) {
-      setErrorMessage("Duration must be between 1 and 1,051,200 minutes (730 days)");
+    if (isNaN(duration) || duration <= 0 || duration > 730) {
+      setErrorMessage("Duration must be between 1 and 730 days");
       return;
     }
 
@@ -38,7 +41,7 @@ const CreateClub = () => {
         address: contractAddress,
         abi: abi,
         functionName: 'createClub',
-        args: [clubName, clubDescription, duration, parseEther(clubPrice), clubImage],
+        args: [clubName, clubDescription, duration, parseEther(clubPrice), clubImage, parseEther(publicPostFee)],
         account: address,
       });
     } catch (err) {
@@ -48,6 +51,12 @@ const CreateClub = () => {
   }
 
   const { isLoading, isSuccess } = useWaitForTransactionReceipt({hash});
+
+  useEffect(() => {
+    if (isSuccess) {
+      router.push('/');
+    }
+  }, [isSuccess, router]);
 
   return (
     <div className="create">
@@ -82,25 +91,35 @@ const CreateClub = () => {
                 />
               </div>
               <div className="create_inner_form_item mt-3">
-                <Label htmlFor="clubDuration">Duration(days)</Label>
+                <Label htmlFor="clubDuration">Duration (days)</Label>
                 <Input
                   type="number"
                   id="clubDuration"
                   placeholder="Ex: 30"
                   min="1"
-                  max="1051200"
+                  max="730"
                   value={clubDuration}
                   onChange={(e) => setClubDuration(e.target.value)}
                 />
               </div>
               <div className="create_inner_form_item mt-3">
-                <Label htmlFor="clubPrice">Membership (ETH)</Label>
+                <Label htmlFor="clubPrice">Membership Price (ETH)</Label>
                 <Input
                   type="text"
                   id="clubPrice"
                   placeholder="Ex: 0.01"
                   value={clubPrice}
                   onChange={(e) => setClubPrice(e.target.value)}
+                />
+              </div>
+              <div className="create_inner_form_item mt-3">
+                <Label htmlFor="publicPostFee">Public Post Fee (ETH)</Label>
+                <Input
+                  type="text"
+                  id="publicPostFee"
+                  placeholder="Ex: 0.001"
+                  value={publicPostFee}
+                  onChange={(e) => setPublicPostFee(e.target.value)}
                 />
               </div>
               <div className="create_inner_form_item mt-3">
@@ -120,12 +139,12 @@ const CreateClub = () => {
                 className="create_inner_submit_button hover:bg-[#fddf38] mt-3"
                 type="submit"
               >
-                {isLoading ? 'Création en cours...' : 'Create Club'}
+                {isLoading ? 'Creating Club...' : 'Create Club'}
               </Button>
             </form>
             {isSuccess && (
               <div className="create_inner_success_message mt-3 text-green-500">
-                Club created successfully!
+                Club created successfully! Redirecting to home page...
               </div>
             )}
           </CardContent>
