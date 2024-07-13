@@ -69,21 +69,21 @@ const JoinClub: React.FC<JoinClubProps> = ({ clubId, members }) => {
   };
 
   if (!address) {
-    return <div className='text-gray-500 font-semibold'>Please connect your wallet to join the club</div>;
+    return <div className='ml-2 text-gray-500 font-semibold'>Please connect your wallet to join the club</div>;
   }
 
   if (isConfirming) return <div>Confirming transaction...</div>;
-  if (isConfirmed) return <div className="text-green-600 font-bold">Successfully joined the club!</div>;
+  if (isConfirmed) return <div className="ml-2 text-green-600 font-bold">You have successfully joined the club!</div>;
   if (error) return <div>Error: {error.message}</div>;
 
   if (isAlreadyMember) {
-    return <div className="text-green-600 font-bold">You are a member of this club</div>;
+    return <div className="ml-2 text-green-600 font-bold">You are a member of this club</div>;
   }
 
   return (
     <div>
       {joinFee && (
-        <div className="text-gray-700 text-sm mb-2">
+        <div className="text-blue-500 text-sm mb-2">
           Current Membership: {formatEther(joinFee)} ETH
         </div>
       )}

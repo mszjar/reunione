@@ -30,7 +30,7 @@ const GetClub = ({ id, onDataFetched }: GetClubProps) => {
   const [memberShare, setMemberShare] = useState<string | null>(null);
 
   const publicClient = usePublicClient();
-  const { address } = useAccount();
+  const { address, isConnected } = useAccount();
 
   const { data: club, isError, isLoading, error } = useReadContract({
     address: contractAddress,
@@ -39,6 +39,13 @@ const GetClub = ({ id, onDataFetched }: GetClubProps) => {
     args: [id],
   } as const) as { data: ClubData | undefined; isError: boolean; isLoading: boolean; error: Error | null };
 
+  const { data: isMember, isLoading: isMemberLoading } = useReadContract({
+    address: contractAddress,
+    abi: abi,
+    functionName: "isMember",
+    args: isConnected ? [id, address] : undefined,
+  } as const);
+
   const { data: hash, isPending, writeContract } = useWriteContract();
 
   const { isLoading: isWithdrawLoading, isSuccess: isWithdrawSuccess } = useWaitForTransactionReceipt({hash});
@@ -46,8 +53,20 @@ const GetClub = ({ id, onDataFetched }: GetClubProps) => {
   useEffect(() => {
     if (club) {
       onDataFetched(club);
+      if (isConnected && club.members.length > 0) {
+        const calculatedShare = club.amountCollected / BigInt(club.members.length);
+        setMemberShare(formatEther(calculatedShare));
+      } else {
+        setMemberShare(null);
+      }
     }
-  }, [club, onDataFetched]);
+  }, [club, onDataFetched, isConnected]);
+
+  useEffect(() => {
+    if (isConnected && !isMemberLoading && isMember !== undefined) {
+      setHasWithdrawn(!isMember);
+    }
+  }, [isMember, isMemberLoading, isConnected]);
 
   const fetchBlockTimestamp = async () => {
     if (publicClient) {
@@ -104,10 +123,6 @@ const GetClub = ({ id, onDataFetched }: GetClubProps) => {
     }
 
     try {
-      // Calculate memberShare before withdrawal
-      const calculatedShare = club.amountCollected / BigInt(club.members.length);
-      setMemberShare(formatEther(calculatedShare));
-
       await writeContract({
         address: contractAddress,
         abi: abi,
@@ -121,7 +136,7 @@ const GetClub = ({ id, onDataFetched }: GetClubProps) => {
     }
   };
 
-  if (isLoading) return <div>Loading...</div>;
+  if (isLoading) return <div>Loading club details...</div>;
   if (isError) {
     console.error("Error fetching club data:", error);
     return <div>Error fetching club data: {error?.message}</div>;
@@ -136,8 +151,8 @@ const GetClub = ({ id, onDataFetched }: GetClubProps) => {
     return `${address.slice(0, 6)}...${address.slice(-4)}`;
   };
 
-  const isMember = club.members.includes(address as Address);
   const clubEnded = hasClubEnded(club.end);
+  const isCurrentMember = isConnected && club.members.includes(address as Address);
 
   return (
     <div className="club-details">
@@ -160,33 +175,58 @@ const GetClub = ({ id, onDataFetched }: GetClubProps) => {
 
         <div className="mt-4">
           <h2 className="text-xl font-bold mb-2">Members ({club.members.length})</h2>
-          <ul className="list-disc list-inside">
-            {club.members.slice(0, showAllMembers ? undefined : 5).map((member, index) => (
-              <li key={index} className="text-gray-600">{truncateAddress(member)}</li>
-            ))}
-          </ul>
-          <button
-            onClick={toggleMemberDisplay}
-            className="text-gray-500 text-xs mb-2"
-          >
-            {showAllMembers ? 'Show Less' : 'Show All'}
-          </button>
-          {!showAllMembers && club.members.length > 5 && (
-            <p className="text-gray-500 mt-2">...and {club.members.length - 5} more</p>
+          {club.members.length > 0 ? (
+            <>
+              <ul className="list-disc list-inside">
+                {club.members.slice(0, showAllMembers ? undefined : 5).map((member, index) => (
+                  <li key={index} className="text-gray-600">{truncateAddress(member)}</li>
+                ))}
+              </ul>
+              <button
+                onClick={toggleMemberDisplay}
+                className="text-gray-500 text-xs mb-2"
+              >
+                {showAllMembers ? 'Show Less' : 'Show All'}
+              </button>
+              {!showAllMembers && club.members.length > 5 && (
+                <p className="text-gray-500 mt-2">...and {club.members.length - 5} more</p>
+              )}
+            </>
+          ) : (
+            <p className="text-gray-600 text-xs">No members yet</p>
           )}
         </div>
 
-        {isMember && (
+        {isConnected ? (
           <div className="mt-2">
-            <Button
-              onClick={handleWithdraw}
-              disabled={isWithdrawLoading || !clubEnded || hasWithdrawn}
-            >
-              {isWithdrawLoading ? 'Withdrawing...' : hasWithdrawn ? 'Withdrawn' : 'Withdraw Funds'}
-            </Button>
-            {!clubEnded && <div className="text-gray-500 text-xs mt-2">Club has not ended yet. Withdrawal not available.</div>}
-            {isWithdrawSuccess && <div className="text-green-500 text-xs mt-2">Funds withdrawn successfully!</div>}
-            {memberShare && <div className="text-blue-500 text-xs mt-2">Your share: {memberShare} ETH</div>}
+            {isCurrentMember && (
+              <>
+                <Button
+                  onClick={handleWithdraw}
+                  disabled={isWithdrawLoading || !clubEnded || hasWithdrawn}
+                  className={`${hasWithdrawn ? 'bg-gray-400 cursor-not-allowed' : ''}`}
+                  >
+                  {isWithdrawLoading ? 'Withdrawing...' :
+                   hasWithdrawn ? 'Funds Withdrawn' :
+                   !clubEnded ? 'Withdraw Funds' : 'Withdraw Funds'}
+                </Button>
+                {!clubEnded && <div className="text-gray-500 text-xs mt-2">Club has not ended yet. Withdrawal not available.</div>}
+                {isWithdrawSuccess && <div className="text-green-500 text-xs mt-2">Funds withdrawn successfully!</div>}
+                   {isCurrentMember && memberShare && (
+                     <div className="mt-2">
+                       <p className="text-blue-500 text-sm">
+                         {hasWithdrawn
+                           ? `Your withdrawn share: ${memberShare} ETH`
+                           : `Your share: ${memberShare} ETH`}
+                       </p>
+                     </div>
+                   )}
+              </>
+            )}
+          </div>
+        ) : (
+          <div className="mt-2">
+            <p className="text-gray-600 text-xs">Connect your wallet to see membership details and withdraw funds.</p>
           </div>
         )}
       </div>
