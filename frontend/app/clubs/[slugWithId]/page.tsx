@@ -1,14 +1,18 @@
 'use client'
 
 import GetClub from '@/components/GetClub'
-import JoinClub from '@/components/JoinClub'
 import React, { useState } from 'react'
 import { useParams } from 'next/navigation'
 import { useAccount } from 'wagmi'
 
+interface ClubData {
+  end: string;
+  members: string[];
+}
+
 const Page = () => {
   const params = useParams()
-  const [clubData, setClubData] = useState(null);
+  const [clubData, setClubData] = useState<ClubData | null>(null);
   const { address } = useAccount();
 
   console.log("Route params:", params);
@@ -35,25 +39,16 @@ const Page = () => {
     return <div>Invalid or missing club ID</div>;
   }
 
-  const handleClubDataFetched = (data) => {
+  const handleClubDataFetched = (data: ClubData) => {
     setClubData(data);
   };
 
   const isClubEnded = clubData ? Date.now() / 1000 > parseInt(clubData.end) : false;
-  const isMember = clubData ? clubData.members.includes(address) : false;
+  const isMember = clubData && address ? clubData.members.includes(address) : false;
 
   return (
     <div className="container mx-auto px-4 py-8">
       <GetClub id={clubId} onDataFetched={handleClubDataFetched} />
-      {clubData && (
-        <div className="mt-4 space-y-4">
-          <JoinClub
-            clubId={clubId}
-            subscriptionPrice={clubData.subscriptionPrice}
-            members={clubData.members}
-          />
-        </div>
-      )}
     </div>
   )
 }
