@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { useAccount, useWriteContract, useWaitForTransactionReceipt } from 'wagmi';
-import { parseEther } from 'viem';
+import { formatEther } from 'viem';
 import { contractAddress, abi } from "@/constants";
 import { Input } from './ui/input';
 import { Button } from './ui/button';
@@ -88,7 +88,7 @@ const CreatePost: React.FC<CreatePostProps> = ({ clubId, publicPostFee, isMember
           <RadioGroup value={postType} onValueChange={(value) => setPostType(value as 'public' | 'member')}>
             <div className="flex items-center space-x-2">
               <RadioGroupItem value="public" id="public" />
-              <Label htmlFor="public">Public Post (Fee: {parseEther(publicPostFee.toString())} ETH)</Label>
+              <Label htmlFor="public">Public Post (Fee: {formatEther(publicPostFee)} ETH)</Label>
             </div>
             <div className="flex items-center space-x-2">
               <RadioGroupItem value="member" id="member" disabled={!isMember} />

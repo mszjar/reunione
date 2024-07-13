@@ -1,11 +1,14 @@
-'use client'
-
 import React, { useEffect, useState } from 'react';
 import { useReadContract, useWriteContract, useWaitForTransactionReceipt, usePublicClient, useAccount } from 'wagmi';
 import { contractAddress, abi } from "@/constants";
-import { formatEther, Address } from "viem";
+import { formatEther, parseEther, Address } from "viem";
 import Image from "next/image";
 import { Button } from './ui/button';
+import JoinClub from './JoinClub';
+import CreatePost from './CreatePost';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Skeleton } from '@/components/ui/skeleton';
+import PostList from './PostList';
 
 interface GetClubProps {
   id: number;
@@ -21,10 +24,11 @@ interface ClubData {
   image: string;
   members: Address[];
   subscriptionPrice: bigint;
+  publicPostFee: bigint;
 }
 
-const GetClub = ({ id, onDataFetched }: GetClubProps) => {
-  const [showAllMembers, setShowAllMembers] = useState(true);
+const GetClub: React.FC<GetClubProps> = ({ id, onDataFetched }) => {
+  const [showAllMembers, setShowAllMembers] = useState(false);
   const [currentBlockTime, setCurrentBlockTime] = useState<number | null>(null);
   const [hasWithdrawn, setHasWithdrawn] = useState(false);
   const [memberShare, setMemberShare] = useState<string | null>(null);
@@ -32,12 +36,12 @@ const GetClub = ({ id, onDataFetched }: GetClubProps) => {
   const publicClient = usePublicClient();
   const { address, isConnected } = useAccount();
 
-  const { data: club, isError, isLoading, error } = useReadContract({
+  const { data: club, isError, isLoading, error, refetch } = useReadContract({
     address: contractAddress,
     abi: abi,
     functionName: "getClub",
     args: [id],
-  } as const) as { data: ClubData | undefined; isError: boolean; isLoading: boolean; error: Error | null };
+  } as const) as { data: ClubData | undefined; isError: boolean; isLoading: boolean; error: Error | null; refetch: () => void };
 
   const { data: isMember, isLoading: isMemberLoading } = useReadContract({
     address: contractAddress,
@@ -131,50 +135,58 @@ const GetClub = ({ id, onDataFetched }: GetClubProps) => {
       });
 
       setHasWithdrawn(true);
+      refetch(); // Refetch club data after withdrawal
     } catch (err) {
       console.error("Error withdrawing funds:", err);
     }
-  };
-
-  if (isLoading) return <div>Loading club details...</div>;
-  if (isError) {
-    console.error("Error fetching club data:", error);
-    return <div>Error fetching club data: {error?.message}</div>;
-  }
-  if (!club) return <div>No club found for ID: {id}</div>;
-
-  const toggleMemberDisplay = () => {
-    setShowAllMembers(!showAllMembers);
   };
 
   const truncateAddress = (address: string) => {
     return `${address.slice(0, 6)}...${address.slice(-4)}`;
   };
 
+  if (isLoading) return <Skeleton className="w-full h-60" />;
+  if (isError) {
+    console.error("Error fetching club data:", error);
+    return <div>Error fetching club data: {error?.message}</div>;
+  }
+  if (!club) return <div>No club found for ID: {id}</div>;
+
   const clubEnded = hasClubEnded(club.end);
   const isCurrentMember = isConnected && club.members.includes(address as Address);
 
   return (
-    <div className="club-details">
-      <Image
-        src={club.image}
-        alt={club.title}
-        width={600}
-        height={400}
-        className="object-contain h-60 w-full rounded-t-2xl"
-      />
-      <div className='p-4 bg-gray-100 rounded-b-2xl'>
-        <h1 className="text-3xl font-bold mb-2">{club.title}</h1>
-        <p className="text-gray-600 mb-4">{club.description}</p>
-        <p className="text-gray-600 mb-2">Status: {clubEnded ? "Ended" : "Active"}</p>
-        <p className="text-gray-600 mb-2">Time remaining: {getTimeRemaining(club.end)}</p>
-        <p className="text-gray-600 mb-2">Current Block Time: {currentBlockTime ? new Date(currentBlockTime * 1000).toLocaleString() : 'Loading...'}</p>
-        <p className="text-gray-600 mb-2">Base Membership: {formatEther(club.subscriptionPrice)} ETH</p>
-        <p className="text-gray-600 mb-2">Created by: {club.owner}</p>
-        <p className="text-gray-600 mb-2">Total collected: {formatEther(club.amountCollected)} ETH</p>
+    <div className="space-y-6">
+      <Card>
+        <CardContent className="p-6">
+          <div className="flex flex-col md:flex-row gap-6">
+            <div className="w-full md:w-1/2">
+              <Image
+                src={club.image}
+                alt={club.title}
+                width={600}
+                height={400}
+                className="object-contain w-full h-60 rounded-lg"
+              />
+            </div>
+            <div className="w-full md:w-1/2 space-y-4">
+              <h1 className="text-3xl font-bold">{club.title}</h1>
+              <p className="text-gray-600">{club.description}</p>
+              <p className="text-gray-600">Status: {clubEnded ? "Ended" : "Active"}</p>
+              <p className="text-gray-600">Time remaining: {getTimeRemaining(club.end)}</p>
+              <p className="text-gray-600">Base Membership: {formatEther(club.subscriptionPrice)} ETH</p>
+              <p className="text-gray-600">Owner: {truncateAddress(club.owner)}</p>
+              <p className="text-gray-600">Total collected: {formatEther(club.amountCollected)} ETH</p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
 
-        <div className="mt-4">
-          <h2 className="text-xl font-bold mb-2">Members ({club.members.length})</h2>
+      <Card>
+        <CardHeader>
+          <CardTitle>Members ({club.members.length})</CardTitle>
+        </CardHeader>
+        <CardContent>
           {club.members.length > 0 ? (
             <>
               <ul className="list-disc list-inside">
@@ -182,54 +194,69 @@ const GetClub = ({ id, onDataFetched }: GetClubProps) => {
                   <li key={index} className="text-gray-600">{truncateAddress(member)}</li>
                 ))}
               </ul>
-              <button
-                onClick={toggleMemberDisplay}
-                className="text-gray-500 text-xs mb-2"
-              >
-                {showAllMembers ? 'Show Less' : 'Show All'}
-              </button>
-              {!showAllMembers && club.members.length > 5 && (
-                <p className="text-gray-500 mt-2">...and {club.members.length - 5} more</p>
+              {club.members.length > 5 && (
+                <Button
+                  variant="link"
+                  onClick={() => setShowAllMembers(!showAllMembers)}
+                  className="mt-2"
+                >
+                  {showAllMembers ? 'Show Less' : 'Show All'}
+                </Button>
               )}
             </>
           ) : (
-            <p className="text-gray-600 text-xs">No members yet</p>
+            <p className="text-gray-600">No members yet</p>
           )}
-        </div>
+        </CardContent>
+      </Card>
 
-        {isConnected ? (
-          <div className="mt-2">
+      {isConnected && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Club Actions</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {!isCurrentMember && <JoinClub clubId={id} members={club.members} />}
             {isCurrentMember && (
               <>
                 <Button
                   onClick={handleWithdraw}
                   disabled={isWithdrawLoading || !clubEnded || hasWithdrawn}
                   className={`${hasWithdrawn ? 'bg-gray-400 cursor-not-allowed' : ''}`}
-                  >
+                >
                   {isWithdrawLoading ? 'Withdrawing...' :
                    hasWithdrawn ? 'Funds Withdrawn' :
-                   !clubEnded ? 'Withdraw Funds' : 'Withdraw Funds'}
+                   !clubEnded ? 'Withdraw Funds (Not Available)' : 'Withdraw Funds'}
                 </Button>
-                {!clubEnded && <div className="text-gray-500 text-xs mt-2">Club has not ended yet. Withdrawal not available.</div>}
-                {isWithdrawSuccess && <div className="text-green-500 text-xs mt-2">Funds withdrawn successfully!</div>}
-                   {isCurrentMember && memberShare && (
-                     <div className="mt-2">
-                       <p className="text-blue-500 text-sm">
-                         {hasWithdrawn
-                           ? `Your withdrawn share: ${memberShare} ETH`
-                           : `Your share: ${memberShare} ETH`}
-                       </p>
-                     </div>
-                   )}
+                {!clubEnded && <p className="text-gray-500 text-sm">Club has not ended yet. Withdrawal not available.</p>}
+                {isWithdrawSuccess && <p className="text-green-500 text-sm">Funds withdrawn successfully!</p>}
+                {memberShare && (
+                  <p className="text-blue-500 text-sm">
+                    {hasWithdrawn
+                      ? `Your withdrawn share: ${memberShare} ETH`
+                      : `Your share: ${memberShare} ETH`}
+                  </p>
+                )}
               </>
             )}
-          </div>
-        ) : (
-          <div className="mt-2">
-            <p className="text-gray-600 text-xs">Connect your wallet to see membership details and withdraw funds.</p>
-          </div>
-        )}
-      </div>
+          </CardContent>
+        </Card>
+      )}
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Create a Post</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <CreatePost
+            clubId={id}
+            publicPostFee={club.publicPostFee}
+            isMember={isCurrentMember}
+          />
+        </CardContent>
+      </Card>
+
+      <PostList clubId={id} />
     </div>
   );
 };
