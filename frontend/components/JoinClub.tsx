@@ -83,8 +83,8 @@ const JoinClub: React.FC<JoinClubProps> = ({ clubId, members }) => {
   return (
     <div>
       {joinFee && (
-        <div className="mb-2">
-          Current join fee: {formatEther(joinFee)} ETH
+        <div className="text-gray-700 text-sm mb-2">
+          Current Membership: {formatEther(joinFee)} ETH
         </div>
       )}
       <button

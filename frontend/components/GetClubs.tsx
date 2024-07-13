@@ -62,7 +62,7 @@ const GetClubs = () => {
                   </div>
                   <p className="text-gray-600 text-sm mb-2">{club.description}</p>
                   <p className="text-gray-600 text-sm mb-2">Remaining days: {dateManagement(club.end)}</p>
-                  <p className="text-gray-600 text-sm mb-2">Membership: {formatEther(BigInt(club.subscriptionPrice))} ETH</p>
+                  <p className="text-gray-600 text-sm mb-2">Base Membership: {formatEther(BigInt(club.subscriptionPrice))} ETH</p>
                   <p className="text-gray-600 text-xs mb-2">Owner: {club.owner}</p>
                 </div>
               </div>
