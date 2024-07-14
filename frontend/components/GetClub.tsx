@@ -156,107 +156,116 @@ const GetClub: React.FC<GetClubProps> = ({ id, onDataFetched }) => {
   const isCurrentMember = isConnected && club.members.includes(address as Address);
 
   return (
-    <div className="space-y-6">
-      <Card>
-        <CardContent className="p-6">
-          <div className="flex flex-col md:flex-row gap-6">
-            <div className="w-full md:w-1/2">
-              <Image
-                src={club.image}
-                alt={club.title}
-                width={600}
-                height={400}
-                className="object-contain w-full h-60 rounded-lg"
-              />
-            </div>
-            <div className="w-full md:w-1/2 space-y-2">
-              <h1 className="text-3xl font-bold">{club.title}</h1>
-              <p className="text-gray-600 pb-2">{club.description}</p>
-              <p className="text-gray-600 text-sm">Status: {clubEnded ? "Ended" : "Active"}</p>
-              <p className="text-gray-600 text-sm">Time remaining: {getTimeRemaining(club.end)}</p>
-              <p className="text-gray-600 text-sm">Base Membership: {formatEther(club.subscriptionPrice)} ETH</p>
-              <p className="text-gray-600 text-sm">Created by: {truncateAddress(club.owner)}</p>
-              <p className="text-gray-600 text-sm">Total collected: {formatEther(club.amountCollected)} ETH</p>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+    <div className="">
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Members ({club.members.length})</CardTitle>
-        </CardHeader>
-        <CardContent>
-          {club.members.length > 0 ? (
-            <>
-              <ul className="list-disc list-inside">
-                {club.members.slice(0, showAllMembers ? undefined : 5).map((member, index) => (
-                  <li key={index} className="text-gray-600">{truncateAddress(member)}</li>
-                ))}
-              </ul>
-              {club.members.length > 5 && (
-                <Button
-                  variant="link"
-                  onClick={() => setShowAllMembers(!showAllMembers)}
-                  className="mt-2"
-                >
-                  {showAllMembers ? 'Show Less' : 'Show All'}
-                </Button>
+      <div className='flex justify-between'>
+
+        <Card>
+          <CardContent className="p-6">
+            <div className="gap-6">
+              <div className="">
+                <Image
+                  src={club.image}
+                  alt={club.title}
+                  width={150}
+                  height={100}
+                  className="object-contain h-60 w-full p-6 rounded-lg"
+                />
+              </div>
+              <div className="w-full md:w-1/2 space-y-2">
+                <h1 className="text-2xl font-bold">{club.title}</h1>
+                <p className="pb-2">{club.description}</p>
+                <p className="text-sm">Status: {clubEnded ? "Ended" : "Active"}</p>
+                <p className="text-sm">Time remaining: {getTimeRemaining(club.end)}</p>
+                <p className="text-sm">Base Membership: {formatEther(club.subscriptionPrice)} ETH</p>
+                <p className="text-sm">Created by: {truncateAddress(club.owner)}</p>
+                <p className="text-sm">Total collected: {formatEther(club.amountCollected)} ETH</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <div className="w-full px-12 space-y-2 overflow-y-auto">
+          <Card className="h-full relative">
+            <PostList clubId={id} />
+            <div className="absolute bottom-0 left-0 right-0">
+              <CardContent className="w-full">
+                <CreatePost
+                  clubId={id}
+                  publicPostFee={club.publicPostFee}
+                  isMember={isCurrentMember}
+                />
+              </CardContent>
+            </div>
+          </Card>
+        </div>
+
+
+      <div className='space-y-4'>
+        {isConnected && (
+          <Card>
+            <CardHeader>
+              <CardTitle>Club Actions</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {!isCurrentMember && <JoinClub clubId={id} members={club.members} />}
+              {isCurrentMember && (
+                <>
+                  <Button
+                    onClick={handleWithdraw}
+                    disabled={isWithdrawLoading || !clubEnded || hasWithdrawn}
+                    className={`${hasWithdrawn ? 'bg-gray-400 cursor-not-allowed' : ''}`}
+                  >
+                    {isWithdrawLoading ? 'Withdrawing...' :
+                    hasWithdrawn ? 'Funds Withdrawn' :
+                    !clubEnded ? 'Withdraw Funds (Not Available)' : 'Withdraw Funds'}
+                  </Button>
+                  {!clubEnded && <p className="text-gray-500 text-sm">Club has not ended yet. Withdrawal not available.</p>}
+                  {isWithdrawSuccess && <p className="text-green-500 text-sm">Funds withdrawn successfully!</p>}
+                  {memberShare && (
+                    <p className="text-blue-500 text-sm">
+                      {hasWithdrawn
+                        ? `Your withdrawn share: ${memberShare} ETH`
+                        : `Your share: ${memberShare} ETH`}
+                    </p>
+                  )}
+                </>
               )}
-            </>
-          ) : (
-            <p className="text-gray-600">No members yet</p>
-          )}
-        </CardContent>
-      </Card>
+            </CardContent>
+          </Card>
+        )}
 
-      {isConnected && (
         <Card>
           <CardHeader>
-            <CardTitle>Club Actions</CardTitle>
+            <CardTitle>Members ({club.members.length})</CardTitle>
           </CardHeader>
-          <CardContent className="space-y-4">
-            {!isCurrentMember && <JoinClub clubId={id} members={club.members} />}
-            {isCurrentMember && (
+          <CardContent>
+            {club.members.length > 0 ? (
               <>
-                <Button
-                  onClick={handleWithdraw}
-                  disabled={isWithdrawLoading || !clubEnded || hasWithdrawn}
-                  className={`${hasWithdrawn ? 'bg-gray-400 cursor-not-allowed' : ''}`}
-                >
-                  {isWithdrawLoading ? 'Withdrawing...' :
-                   hasWithdrawn ? 'Funds Withdrawn' :
-                   !clubEnded ? 'Withdraw Funds (Not Available)' : 'Withdraw Funds'}
-                </Button>
-                {!clubEnded && <p className="text-gray-500 text-sm">Club has not ended yet. Withdrawal not available.</p>}
-                {isWithdrawSuccess && <p className="text-green-500 text-sm">Funds withdrawn successfully!</p>}
-                {memberShare && (
-                  <p className="text-blue-500 text-sm">
-                    {hasWithdrawn
-                      ? `Your withdrawn share: ${memberShare} ETH`
-                      : `Your share: ${memberShare} ETH`}
-                  </p>
+                <ul className="list-disc list-inside">
+                  {club.members.slice(0, showAllMembers ? undefined : 5).map((member, index) => (
+                    <li key={index} className="text-gray-600">{truncateAddress(member)}</li>
+                  ))}
+                </ul>
+                {club.members.length > 5 && (
+                  <Button
+                    variant="link"
+                    onClick={() => setShowAllMembers(!showAllMembers)}
+                    className="mt-2"
+                  >
+                    {showAllMembers ? 'Show Less' : 'Show All'}
+                  </Button>
                 )}
               </>
+            ) : (
+              <p className="text-gray-600">No members yet</p>
             )}
           </CardContent>
         </Card>
-      )}
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Create a Post</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <CreatePost
-            clubId={id}
-            publicPostFee={club.publicPostFee}
-            isMember={isCurrentMember}
-          />
-        </CardContent>
-      </Card>
+        </div>
+      </div>
 
-      <PostList clubId={id} />
     </div>
   );
 };

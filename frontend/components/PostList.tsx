@@ -7,6 +7,8 @@ import { formatEther, Address } from "viem";
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
+import { ReloadIcon } from '@radix-ui/react-icons';
+import { ScrollArea } from "@/components/ui/scroll-area"
 
 interface Post {
   author: Address;
@@ -24,7 +26,7 @@ interface PostListProps {
 const PostList: React.FC<PostListProps> = ({ clubId, pageSize = 10 }) => {
   const [posts, setPosts] = useState<Post[]>([]);
   const [currentPage, setCurrentPage] = useState(0);
-  const [hasMore, setHasMore] = useState(true);
+  const [hasMore, setHasMore] = useState(false);
 
   const { data: postCount, isLoading: isCountLoading } = useReadContract({
     address: contractAddress,
@@ -74,38 +76,40 @@ const PostList: React.FC<PostListProps> = ({ clubId, pageSize = 10 }) => {
   const totalPosts = Number(postCount || 0);
 
   return (
-    <Card>
+    <div>
       <CardHeader>
-        <CardTitle>Posts ({totalPosts})</CardTitle>
+        <CardTitle>Club's Wall ({totalPosts})</CardTitle>
       </CardHeader>
       <CardContent>
+        <div className='flex justify-end'>
+          {hasMore && (
+            <ReloadIcon
+            onClick={loadMorePosts}
+            className={`mb-4 cursor-pointer ${isPostsLoading ? 'animate-spin' : ''} text-gray-600 hover:text-gray-800`}
+            />
+          )}
+        </div>
         {totalPosts === 0 ? (
           <p>No posts yet.</p>
         ) : (
-          <div className="space-y-4">
-            {posts.map((post, index) => (
-              <Card key={index}>
-                <CardContent className="p-4">
-                  <p className="font-semibold">{post.isMemberPost ? 'Member Post' : 'Public Post'}</p>
-                  <p className="text-sm text-gray-500">By: {post.author}</p>
-                  <p className="text-sm text-gray-500">Posted on: {formatDate(post.timestamp)}</p>
-                  {!post.isMemberPost && (
-                    <p className="text-sm text-gray-500">Fee: {formatEther(post.fee)} ETH</p>
-                  )}
-                  <p className="mt-2">{post.content}</p>
-                </CardContent>
-              </Card>
-            ))}
-            {isPostsLoading && <Skeleton className="w-full h-20" />}
-          </div>
-        )}
-        {hasMore && (
-          <Button onClick={loadMorePosts} className="mt-4" disabled={isPostsLoading}>
-            {isPostsLoading ? 'Loading...' : 'Load More Posts'}
-          </Button>
+        <ScrollArea className="overflow-y-auto h-[450px] w-full px-4">
+          {posts.map((post, index) => (
+            <Card key={index} className='mb-4'>
+              <CardContent className="p-2">
+                <p className="text-xs text-gray-500">{post.author} ({post.isMemberPost ? 'Member' : 'Public'})</p>
+                <p className="mt-2 text-sm">{post.content}</p>
+                <p className="flex text-xs text-gray-500 justify-end">{formatDate(post.timestamp)}</p>
+                {!post.isMemberPost && (
+                  <p className="flex text-xs text-gray-500 justify-end">Fee: {formatEther(post.fee)} ETH</p>
+                )}
+              </CardContent>
+            </Card>
+          ))}
+          {isPostsLoading && <Skeleton className="w-full h-20" />}
+        </ScrollArea>
         )}
       </CardContent>
-    </Card>
+    </div>
   );
 };
 

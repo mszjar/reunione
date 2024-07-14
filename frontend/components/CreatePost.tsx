@@ -70,10 +70,9 @@ const CreatePost: React.FC<CreatePostProps> = ({ clubId, publicPostFee, isMember
 
   return (
     <div className="create-post">
-      <h2 className="text-2xl font-bold mb-4">Create a Post</h2>
       <form onSubmit={handleSubmit}>
-        <div className="mb-4">
-          <Label htmlFor="content">Post Content</Label>
+        <div className="flex gap-2">
+          <div className='w-full'>
           <Input
             id="content"
             value={content}
@@ -81,25 +80,25 @@ const CreatePost: React.FC<CreatePostProps> = ({ clubId, publicPostFee, isMember
             maxLength={280}
             placeholder="What's on your mind?"
           />
-          <p className="text-sm text-gray-500 mt-1">{content.length}/280 characters</p>
+          <p className="flex ml-2 text-sm text-gray-500">{content.length}/280 characters</p>
+          </div>
+        <Button type="submit" disabled={isConfirming}>
+          {isConfirming ? 'Creating Post...' : 'Create Post'}
+        </Button>
         </div>
-        <div className="mb-4">
-          <Label>Post Type</Label>
+        <div className="my-2">
           <RadioGroup value={postType} onValueChange={(value) => setPostType(value as 'public' | 'member')}>
             <div className="flex items-center space-x-2">
               <RadioGroupItem value="public" id="public" />
-              <Label htmlFor="public">Public Post (Fee: {formatEther(publicPostFee)} ETH)</Label>
+              <Label htmlFor="public">Public Fee ({formatEther(publicPostFee)} ETH)</Label>
             </div>
             <div className="flex items-center space-x-2">
               <RadioGroupItem value="member" id="member" disabled={!isMember} />
-              <Label htmlFor="member">Member Post {!isMember && '(Members Only)'}</Label>
+              <Label htmlFor="member">Member Fee (Free) {!isMember && '(Members Only)'}</Label>
             </div>
           </RadioGroup>
         </div>
         {error && <p className="text-red-500 mb-4">{error}</p>}
-        <Button type="submit" disabled={isConfirming}>
-          {isConfirming ? 'Creating Post...' : 'Create Post'}
-        </Button>
       </form>
       {isConfirmed && (
         <p className="text-green-500 mt-4">Post created successfully!</p>

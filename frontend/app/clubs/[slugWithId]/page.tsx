@@ -47,7 +47,7 @@ const Page = () => {
   const isMember = clubData && address ? clubData.members.includes(address) : false;
 
   return (
-    <div className="container mx-auto px-4 py-8">
+    <div className="px-4">
       <GetClub id={clubId} onDataFetched={handleClubDataFetched} />
     </div>
   )

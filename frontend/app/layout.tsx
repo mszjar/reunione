@@ -19,6 +19,7 @@ import {
   QueryClient,
 } from "@tanstack/react-query";
 import { Layout } from "@/components/Layout";
+import MedievalRainbowKitProvider from "./MedievalRainbowKitProvider";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -46,11 +47,11 @@ export default function RootLayout({
       <body className={inter.className}>
         <WagmiProvider config={config}>
           <QueryClientProvider client={queryClient}>
-            <RainbowKitProvider modalSize="compact" theme={darkTheme({accentColor: '#dfbe2c', accentColorForeground: 'black'})}>
+            <MedievalRainbowKitProvider>
               <Layout>
                 {children}
               </Layout>
-            </RainbowKitProvider>
+            </MedievalRainbowKitProvider>
           </QueryClientProvider>
         </WagmiProvider>
       </body>

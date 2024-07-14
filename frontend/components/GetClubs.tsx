@@ -54,16 +54,16 @@ const GetClubs = () => {
                   alt={club.title}
                   width={600}
                   height={400}
-                  className="object-contain transition-all group-hover:bg-gray-800 group-hover:opacity-80 h-40 w-full"
+                  className="object-contain transition-all group-hover:bg-[#f8f1e7] h-40 w-full"
                 />
-                <div className='flex flex-col p-4 transition-all group-hover:bg-zinc-300 bg-gray-200'>
+                <div className='flex flex-col p-4 transition-all group-hover:bg-[#ebc996] bg-[#ebcea2]'>
                   <div className="flex items-center gap-2 mb-2">
                     <p className="text-2xl font-bold">{club.title}</p>
                   </div>
-                  <p className="text-gray-600 text-sm mb-2">{club.description}</p>
-                  <p className="text-gray-600 text-sm mb-2">Remaining days: {dateManagement(club.end)}</p>
-                  <p className="text-gray-600 text-sm mb-2">Base Membership: {formatEther(BigInt(club.subscriptionPrice))} ETH</p>
-                  <p className="text-gray-600 text-xs mb-2">Created by: {club.owner}</p>
+                  <p className="text-sm mb-2">{club.description}</p>
+                  <p className="text-sm mb-2">Remaining days: {dateManagement(club.end)}</p>
+                  <p className="text-sm mb-2">Base Membership: {formatEther(BigInt(club.subscriptionPrice))} ETH</p>
+                  <p className="text-xs mb-2">Created by: {club.owner}</p>
                 </div>
               </div>
             </Link>

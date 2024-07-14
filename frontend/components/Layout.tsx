@@ -7,9 +7,9 @@ import Footer from './Footer'
 
 export const Layout = ({ children }: LayoutChildrenProps ) => {
   return (
-    <div className="h-screen flex flex-col justify-between">
+    <div className="h-screen flex flex-col justify-between get min-h-screen font-serif bg-[#f5f3ef]">
       <Header/>
-      <div className="container mx-auto  px-12 flex flex-col w-full">
+      <div className="px-12">
         {children}
       </div>
       <Footer/>
