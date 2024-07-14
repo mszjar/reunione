@@ -310,4 +310,88 @@ describe("Reunione", function () {
     });
   });
 
+  // GETTER FUNCTIONS
+  describe("Getter Functions", function () {
+    let reunione, owner, addr1, addr2, addr3, clubId;
+
+    beforeEach(async function () {
+      const Reunione = await ethers.getContractFactory("Reunione");
+      reunione = await Reunione.deploy();
+      [owner, addr1, addr2, addr3] = await ethers.getSigners();
+
+      const title = "Test Club";
+      const description = "A test club";
+      const duration = 30; // 30 days
+      const subscriptionPrice = ethers.parseEther("0.1");
+      const image = "https://example.com/image.jpg";
+      const publicPostFee = ethers.parseEther("0.01");
+
+      await reunione.createClub(title, description, duration, subscriptionPrice, image, publicPostFee);
+      clubId = 0;
+
+      const joinFee = await reunione.calculateJoinFee(clubId);
+      await reunione.connect(addr1).joinClub(clubId, { value: joinFee });
+
+      await reunione.connect(addr1).addMemberPost(clubId, "Member post 1");
+      await reunione.connect(addr2).addPublicPost(clubId, "Public post 1", { value: publicPostFee });
+    });
+
+    it("Should get all clubs", async function () {
+      const clubs = await reunione.getClubs();
+      expect(clubs.length).to.equal(1);
+      expect(clubs[0].title).to.equal("Test Club");
+    });
+
+    it("Should get a specific club", async function () {
+      const club = await reunione.getClub(clubId);
+      expect(club.title).to.equal("Test Club");
+      expect(club.members.length).to.equal(1);
+      expect(club.postCount).to.equal(2);
+    });
+
+    it("Should get club members", async function () {
+      const members = await reunione.getMembers(clubId);
+      expect(members.length).to.equal(1);
+      expect(members[0]).to.equal(addr1.address);
+    });
+
+    it("Should get post count", async function () {
+      const postCount = await reunione.getPostCount(clubId);
+      expect(postCount).to.equal(2);
+    });
+
+    it("Should get posts", async function () {
+      const posts = await reunione.getPosts(clubId, 0, 2);
+      expect(posts.length).to.equal(2);
+      expect(posts[0].content).to.equal("Member post 1");
+      expect(posts[0].author).to.equal(addr1.address);
+      expect(posts[0].isMemberPost).to.be.true;
+      expect(posts[1].content).to.equal("Public post 1");
+      expect(posts[1].author).to.equal(addr2.address);
+      expect(posts[1].isMemberPost).to.be.false;
+    });
+
+    it("Should revert when getting a non-existent post", async function () {
+      await expect(reunione.getPost(clubId, 2))
+        .to.be.revertedWithCustomError(reunione, "PostNotFound");
+    });
+
+    it("Should revert when getting a non-existent club", async function () {
+      await expect(reunione.getClub(1))
+        .to.be.revertedWith("Club does not exist");
+    });
+
+    it("Should handle getting posts with invalid range", async function () {
+      await expect(reunione.getPosts(clubId, 0, 3))
+        .to.be.revertedWith("Invalid index range");
+    });
+
+    it("Should return empty array when getting posts from empty club", async function () {
+      await reunione.createClub("Empty Club", "No posts", 30, ethers.parseEther("0.1"), "image", ethers.parseEther("0.01"));
+      const emptyClubId = 1;
+      const posts = await reunione.getPosts(emptyClubId, 0, 0);
+      expect(posts.length).to.equal(0);
+    });
+  });
+
 });
