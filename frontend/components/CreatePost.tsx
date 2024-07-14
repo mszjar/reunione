@@ -69,9 +69,9 @@ const CreatePost: React.FC<CreatePostProps> = ({ clubId, publicPostFee, isMember
   };
 
   return (
-    <div className="create-post">
+    <div className="create-post bg-[#f5f3ef]">
       <form onSubmit={handleSubmit}>
-        <div className="flex gap-2">
+        <div className="flex gap-2 pt-6">
           <div className='w-full'>
           <Input
             id="content"
@@ -93,7 +93,7 @@ const CreatePost: React.FC<CreatePostProps> = ({ clubId, publicPostFee, isMember
               <Label htmlFor="public">Public Fee ({formatEther(publicPostFee)} ETH)</Label>
             </div>
             <div className="flex items-center space-x-2">
-              <RadioGroupItem value="member" id="member" disabled={!isMember} />
+              <RadioGroupItem value="member" id="member" disabled={!isMember}/>
               <Label htmlFor="member">Member Fee (Free) {!isMember && '(Members Only)'}</Label>
             </div>
           </RadioGroup>

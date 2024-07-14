@@ -76,9 +76,9 @@ const PostList: React.FC<PostListProps> = ({ clubId, pageSize = 10 }) => {
   const totalPosts = Number(postCount || 0);
 
   return (
-    <div>
+    <div className='bg-[#f5f3ef] rounded-xl'>
       <CardHeader>
-        <CardTitle>Club's Wall ({totalPosts})</CardTitle>
+        <CardTitle>Wall ({totalPosts})</CardTitle>
       </CardHeader>
       <CardContent>
         <div className='flex justify-end'>

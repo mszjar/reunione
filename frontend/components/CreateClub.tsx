@@ -59,12 +59,12 @@ const CreateClub = () => {
   }, [isSuccess, router]);
 
   return (
-    <div className="create">
-      <div className="create_inner">
-        <h1 className="create_inner_title">
+    <div className="container">
+      <div className="px-64">
+        <h1 className="mb-10">
           <span className="text-2xl flex justify-center">Create a Club</span>
         </h1>
-        <Card>
+        <Card className="bg-[#f5f3ef]">
           <CardContent className="pt-5">
             <form onSubmit={(e) => {
               e.preventDefault();
@@ -136,7 +136,7 @@ const CreateClub = () => {
               <Button
                 variant="outline"
                 disabled={isLoading}
-                className="create_inner_submit_button hover:bg-[#fddf38] mt-3"
+                className="create_inner_submit_button bg-[#46954a] hover:bg-[#73c077] mt-3"
                 type="submit"
               >
                 {isLoading ? 'Creating Club...' : 'Create Club'}

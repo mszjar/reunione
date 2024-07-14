@@ -186,7 +186,7 @@ const GetClub: React.FC<GetClubProps> = ({ id, onDataFetched }) => {
         </Card>
 
         <div className="w-full px-12 space-y-2 overflow-y-auto">
-          <Card className="h-full relative">
+          <Card className="h-full relative bg-[#f5f3ef]">
             <PostList clubId={id} />
             <div className="absolute bottom-0 left-0 right-0">
               <CardContent className="w-full">
@@ -205,7 +205,7 @@ const GetClub: React.FC<GetClubProps> = ({ id, onDataFetched }) => {
         {isConnected && (
           <Card>
             <CardHeader>
-              <CardTitle>Club Actions</CardTitle>
+              <CardTitle>Actions</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               {!isCurrentMember && <JoinClub clubId={id} members={club.members} />}
