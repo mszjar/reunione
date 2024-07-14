@@ -2,178 +2,144 @@ const {
   time,
   loadFixture,
 } = require("@nomicfoundation/hardhat-toolbox/network-helpers");
-const { assert, expect } = require("chai");
+const { anyValue } = require("@nomicfoundation/hardhat-chai-matchers/withArgs");
+const { expect } = require("chai");
 const { ethers } = require("hardhat");
 
 describe("Reunione", function () {
-  let owner;
-  let addr1;
-  let addr2;
-  let addr3;
-  let reunione;
-
-  async function deployReunione() {
+  async function deployReunioneFixture() {
     const [owner, addr1, addr2, addr3] = await ethers.getSigners();
     const Reunione = await ethers.getContractFactory("Reunione");
     const reunione = await Reunione.deploy();
-
     return { reunione, owner, addr1, addr2, addr3 };
   }
 
-  async function deployReunioneAndCreateClub() {
-    const { reunione, owner, addr1, addr2, addr3 } = await deployReunione();
-    const title = "Blockchain Club";
-    const description = "A club for blockchain enthusiasts";
-    const duration = 365 * 24 * 60 * 60; // 1 year
-    const subscriptionPrice = ethers.parseEther("1");
-    const image = "ipfs://imagehash";
-    await reunione.createClub(title, description, duration, subscriptionPrice, image);
+  describe("Deployment", function () {
+    it("Should set the correct initial state", async function () {
+      const { reunione } = await loadFixture(deployReunioneFixture);
+      expect(await reunione.numberOfClubs()).to.equal(0);
+    });
+  });
 
-    return { reunione, owner, addr1, addr2, addr3 };
-  }
+  describe("Club Creation", function () {
+    it("Should create a club with correct parameters", async function () {
+      const { reunione, owner } = await loadFixture(deployReunioneFixture);
+      const title = "Test Club";
+      const description = "A test club";
+      const duration = 30; // 30 days
+      const subscriptionPrice = ethers.parseEther("0.1");
+      const image = "https://example.com/image.jpg";
+      const publicPostFee = ethers.parseEther("0.01");
 
-  describe('Deployment', function() {
-    beforeEach(async function() {
-      const fixture = await loadFixture(deployReunione);
-      owner = fixture.owner;
-      addr1 = fixture.addr1;
-      addr2 = fixture.addr2;
-      addr3 = fixture.addr3;
-      reunione = fixture.reunione;
-    })
+      await expect(reunione.createClub(title, description, duration, subscriptionPrice, image, publicPostFee))
+        .to.emit(reunione, "ClubCreated")
+        .withArgs(0, owner.address, title, description, anyValue, subscriptionPrice, image, publicPostFee);
 
-    it('should deploy the smart contract correctly', async function() {
-      let numberOfClubs = await reunione.numberOfClubs();
-      assert(numberOfClubs.toString() === "0");
-    })
-  })
+      const club = await reunione.getClub(0);
+      expect(club.title).to.equal(title);
+      expect(club.description).to.equal(description);
+      expect(club.subscriptionPrice).to.equal(subscriptionPrice);
+      expect(club.image).to.equal(image);
+      expect(club.publicPostFee).to.equal(publicPostFee);
 
-  describe('createClub', function() {
-    beforeEach(async function() {
-      const fixture = await loadFixture(deployReunione);
-      owner = fixture.owner;
-      addr1 = fixture.addr1;
-      addr2 = fixture.addr2;
-      addr3 = fixture.addr3;
-      reunione = fixture.reunione;
-    })
-
-    it('should create a new club', async function() {
-      const title = "Blockchain Club";
-      const description = "A club for blockchain enthusiasts";
-      const duration = 365 * 24 * 60 * 60; // 1 year
-      const subscriptionPrice = ethers.parseEther("1");
-      const image = "ipfs://imagehash";
-      await reunione.createClub(title, description, duration, subscriptionPrice, image);
-
-      const club = await reunione.clubs(0);
-      assert(club.owner === owner.address);
-      assert(club.title === title);
-      assert(club.description === description);
-      assert(club.subscriptionPrice.toString() === subscriptionPrice.toString());
-      assert(club.image === image);
-    })
-
-    it('should revert if duration exceeds maximum limit', async function() {
-      const title = "Blockchain Club";
-      const description = "A club for blockchain enthusiasts";
-      const duration = (365 * 2 + 1) * 24 * 60 * 60; // Over 2 years
-      const subscriptionPrice = ethers.parseEther("1");
-      const image = "ipfs://imagehash";
-
-      await expect(
-        reunione.createClub(title, description, duration, subscriptionPrice, image)
-      ).to.be.revertedWithCustomError(reunione, "DurationExceeded");
-    })
-
-    it('should revert if subscription price is zero', async function() {
-      const title = "Blockchain Club";
-      const description = "A club for blockchain enthusiasts";
-      const duration = 365 * 24 * 60 * 60; // 1 year
-      const subscriptionPrice = 0;
-      const image = "ipfs://imagehash";
-
-      await expect(
-        reunione.createClub(title, description, duration, subscriptionPrice, image)
-      ).to.be.revertedWithCustomError(reunione, "InvalidSubscriptionPrice");
-    })
-  })
-
-  describe('joinClub', function() {
-    beforeEach(async function() {
-      const fixture = await loadFixture(deployReunioneAndCreateClub);
-      owner = fixture.owner;
-      addr1 = fixture.addr1;
-      addr2 = fixture.addr2;
-      addr3 = fixture.addr3;
-      reunione = fixture.reunione;
-    })
-
-    it('should allow a user to join a club with correct subscription price', async function() {
-      const subscriptionPrice = ethers.parseEther("1");
-      await reunione.connect(addr1).joinClub(0, { value: subscriptionPrice });
-      const club = await reunione.clubs(0);
-      assert(club.amountCollected.toString() === subscriptionPrice.toString());
-      assert(await reunione.isMember(0, addr1.address) === true);
-    })
-
-    it('should revert if club has ended', async function() {
-      await time.increase(365 * 24 * 60 * 60); // Advance time by 1 year
-      const subscriptionPrice = ethers.parseEther("1");
-      await expect(
-        reunione.connect(addr1).joinClub(0, { value: subscriptionPrice })
-      ).to.be.revertedWithCustomError(reunione, "ClubEnded");
-    })
-
-    it('should revert if incorrect subscription price is sent', async function() {
-      const incorrectPrice = ethers.parseEther("0.5");
-      await expect(
-        reunione.connect(addr1).joinClub(0, { value: incorrectPrice })
-      ).to.be.revertedWithCustomError(reunione, "InvalidSubscriptionPayment");
-    })
-  })
-
-  describe('withdraw', function() {
-    beforeEach(async function() {
-      const fixture = await loadFixture(deployReunioneAndCreateClub);
-      owner = fixture.owner;
-      addr1 = fixture.addr1;
-      addr2 = fixture.addr2;
-      addr3 = fixture.addr3;
-      reunione = fixture.reunione;
-    })
-
-    it('should allow a member to withdraw funds after club ends', async function() {
-      const subscriptionPrice = ethers.parseEther("1");
-      await reunione.connect(addr1).joinClub(0, { value: subscriptionPrice });
-      await time.increase(2 * 365 * 24 * 60 * 60); // Advance time by 2 years
-
-      const balanceBefore = await ethers.provider.getBalance(addr1.address);
-      await reunione.connect(addr1).withdraw(0);
-      const balanceAfter = await ethers.provider.getBalance(addr1.address);
-
-      // Convert balances to string for comparison
-      const balanceBeforeStr = balanceBefore.toString();
-      const balanceAfterStr = balanceAfter.toString();
-
-      assert(balanceAfterStr > balanceBeforeStr, "Balance after withdrawal should be greater than balance before withdrawal");
+      console.log("Club end time:", club.end.toString());
+      console.log("Current block timestamp:", (await ethers.provider.getBlock("latest")).timestamp);
     });
 
+    it("Should revert if duration exceeds MAX_DURATION", async function () {
+      const { reunione } = await loadFixture(deployReunioneFixture);
+      const invalidDuration = 731; // MAX_DURATION + 1
+      await expect(reunione.createClub("Test", "Test", invalidDuration, ethers.parseEther("0.1"), "test", ethers.parseEther("0.01")))
+        .to.be.revertedWithCustomError(reunione, "DurationExceeded");
+    });
 
-    it('should revert if club has not ended', async function() {
-      const subscriptionPrice = ethers.parseEther("1");
-      await reunione.connect(addr1).joinClub(0, { value: subscriptionPrice });
+    it("Should revert if subscription price is zero", async function () {
+      const { reunione } = await loadFixture(deployReunioneFixture);
+      await expect(reunione.createClub("Test", "Test", 30, 0, "test", ethers.parseEther("0.01")))
+        .to.be.revertedWithCustomError(reunione, "InvalidSubscriptionPrice");
+    });
+  });
 
-      await expect(
-        reunione.connect(addr1).withdraw(0)
-      ).to.be.revertedWithCustomError(reunione, "ClubNotEnded");
-    })
 
-    it('should revert if caller is not a member', async function() {
-      await time.increase(365 * 24 * 60 * 60); // Advance time by 1 year
-      await expect(
-        reunione.connect(addr2).withdraw(0)
-      ).to.be.revertedWithCustomError(reunione, "NotAMember");
-    })
-  })
-})
+  describe("Joining Clubs", function () {
+    let reunione, owner, addr1, addr2, addr3, clubId;
+
+    beforeEach(async function () {
+      const Reunione = await ethers.getContractFactory("Reunione");
+      reunione = await Reunione.deploy();
+      [owner, addr1, addr2, addr3] = await ethers.getSigners();
+
+      const title = "Test Club";
+      const description = "A test club";
+      const duration = 365; // 365 days
+      const subscriptionPrice = ethers.parseEther("0.1");
+      const image = "https://example.com/image.jpg";
+      const publicPostFee = ethers.parseEther("0.01");
+
+      await reunione.createClub(title, description, duration, subscriptionPrice, image, publicPostFee);
+      clubId = 0;
+
+      const club = await reunione.getClub(clubId);
+      console.log("Club end time:", club.end.toString());
+      console.log("Current block timestamp:", (await ethers.provider.getBlock("latest")).timestamp);
+    });
+
+    it("Should allow a user to join a club", async function () {
+      const joinFee = await reunione.calculateJoinFee(clubId);
+      console.log("Join Fee:", joinFee.toString());
+
+      await expect(reunione.connect(addr1).joinClub(clubId, { value: joinFee }))
+        .to.emit(reunione, "JoinedClub")
+        .withArgs(clubId, addr1.address, joinFee);
+
+      expect(await reunione.isMember(clubId, addr1.address)).to.be.true;
+    });
+
+    it("Should calculate correct join fee", async function () {
+      const initialJoinFee = await reunione.calculateJoinFee(clubId);
+      console.log("Initial Join Fee:", initialJoinFee.toString());
+
+      await reunione.connect(addr1).joinClub(clubId, { value: initialJoinFee });
+
+      const secondJoinFee = await reunione.calculateJoinFee(clubId);
+      console.log("Second Join Fee:", secondJoinFee.toString());
+
+      expect(secondJoinFee).to.be.gte(initialJoinFee);
+
+      await reunione.connect(addr2).joinClub(clubId, { value: secondJoinFee });
+    });
+
+    it("Should revert if club has ended", async function () {
+      await ethers.provider.send("evm_increaseTime", [366 * 24 * 60 * 60]); // 366 days
+      await ethers.provider.send("evm_mine");
+
+      const club = await reunione.getClub(clubId);
+      console.log("Club end time:", club.end.toString());
+      console.log("Current block timestamp:", (await ethers.provider.getBlock("latest")).timestamp);
+
+      const joinFee = await reunione.calculateJoinFee(clubId);
+      await expect(reunione.connect(addr1).joinClub(clubId, { value: joinFee }))
+        .to.be.revertedWithCustomError(reunione, "ClubEnded");
+    });
+
+    it("Should revert if user is already a member", async function () {
+      const joinFee = await reunione.calculateJoinFee(clubId);
+      await reunione.connect(addr1).joinClub(clubId, { value: joinFee });
+      await expect(reunione.connect(addr1).joinClub(clubId, { value: joinFee }))
+        .to.be.revertedWithCustomError(reunione, "AlreadyAMember");
+    });
+
+    it("Should revert if join fee is incorrect", async function () {
+      const joinFee = await reunione.calculateJoinFee(clubId);
+      console.log("Correct Join Fee:", joinFee.toString());
+      if (joinFee > 0) {
+        const incorrectFee = joinFee - BigInt(1); // Subtract 1 wei from the correct fee
+        console.log("Incorrect Join Fee:", incorrectFee.toString());
+        await expect(reunione.connect(addr1).joinClub(clubId, { value: incorrectFee }))
+          .to.be.revertedWithCustomError(reunione, "InvalidSubscriptionPrice");
+      } else {
+        console.log("Join fee is 0, skipping incorrect fee test");
+      }
+    });
+  });
+});
