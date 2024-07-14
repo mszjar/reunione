@@ -386,11 +386,21 @@ describe("Reunione", function () {
         .to.be.revertedWith("Invalid index range");
     });
 
-    it("Should return empty array when getting posts from empty club", async function () {
+    it("Should handle getting posts from empty club", async function () {
       await reunione.createClub("Empty Club", "No posts", 30, ethers.parseEther("0.1"), "image", ethers.parseEther("0.01"));
       const emptyClubId = 1;
-      const posts = await reunione.getPosts(emptyClubId, 0, 0);
-      expect(posts.length).to.equal(0);
+
+      // Check that the post count is 0
+      const postCount = await reunione.getPostCount(emptyClubId);
+      expect(postCount).to.equal(0);
+
+      // Trying to get posts should revert with 'Invalid index range'
+      await expect(reunione.getPosts(emptyClubId, 0, 1))
+        .to.be.revertedWith("Invalid index range");
+
+      // Check that we can't get any posts
+      await expect(reunione.getPost(emptyClubId, 0))
+        .to.be.revertedWithCustomError(reunione, "PostNotFound");
     });
   });
 
