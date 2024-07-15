@@ -2,6 +2,14 @@
 
 Reunione is a decentralized application (DApp) for creating and managing time-limited, subscription-based clubs on the Ethereum blockchain. It allows users to create clubs, join existing clubs, post content, and withdraw funds after the club's duration ends.
 
+# Project Demo
+
+For a detailed walkthrough of the Reunione project, check out our video presentation:
+
+[![Reunione Project Demo](https://cdn.loom.com/sessions/thumbnails/5a75f63278da413682c6a28894365d1a-with-play.gif)](https://www.loom.com/share/5a75f63278da413682c6a28894365d1a?sid=f8ce7384-f1f7-495b-ae74-ec6f6a88bf47)
+
+Click on the image above to watch the full demo video.
+
 ## Features
 
 - Create clubs with customizable duration, subscription price, and public post fee
@@ -128,10 +136,6 @@ To deploy the Reunione contract to a live network (e.g., Ethereum mainnet or a t
 ```
 npx hardhat run scripts/deploy.js --network sepolia
 ```
-
-### Frontend
-
-[Add information about frontend deployment, e.g., using Vercel or other platforms]
 
 ## Contributing
 
