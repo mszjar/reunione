@@ -1,19 +1,15 @@
 'use client'
-// import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
-
 
 import '@rainbow-me/rainbowkit/styles.css';
 import {
   getDefaultConfig,
   RainbowKitProvider,
-  darkTheme
 } from '@rainbow-me/rainbowkit';
 import { WagmiProvider } from 'wagmi';
-import {
-  hardhat
-} from 'wagmi/chains';
+import { sepolia } from 'wagmi/chains';
+import { http } from 'viem';
 import {
   QueryClientProvider,
   QueryClient,
@@ -23,16 +19,14 @@ import MedievalRainbowKitProvider from "./MedievalRainbowKitProvider";
 
 const inter = Inter({ subsets: ["latin"] });
 
-// export const metadata: Metadata = {
-//   title: "Reunione",
-//   description: "Defi clubs",
-// };
-
 const config = getDefaultConfig({
   appName: 'Reunione',
   projectId: process.env.NEXT_PUBLIC_WALLETCONNECT_ID || '',
-  chains: [hardhat],
-  ssr: true, // If your dApp uses server side rendering (SSR)
+  chains: [sepolia],
+  ssr: true,
+  transports: {
+    [sepolia.id]: http(process.env.NEXT_PUBLIC_SEPOLIA_RPC_URL),
+  },
 });
 
 const queryClient = new QueryClient();
