@@ -123,10 +123,6 @@ To run the tests with coverage report:
 npx hardhat coverage
 ```
 
-### Frontend
-
-[Add information about frontend testing if applicable]
-
 ## Deployment
 
 ### Backend
@@ -134,7 +130,7 @@ npx hardhat coverage
 To deploy the Reunione contract to a live network (e.g., Ethereum mainnet or a testnet), update the `hardhat.config.js` file with your network configuration and run:
 
 ```
-npx hardhat run scripts/deploy.js --network sepolia
+npx hardhat ignition deploy ignition/modules/Reunione.js --network sepolia
 ```
 
 ## Contributing
